@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.env
+*.sqlite3
+node_modules/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+.env.local
+.env.*.local
+# local Postgres data directory used when running without Docker
+.pgdata/

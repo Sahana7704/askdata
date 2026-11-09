@@ -1,0 +1,194 @@
+[
+  {
+    "id": "G01",
+    "category": "simple",
+    "question": "How many customers are there?",
+    "reference_sql": "SELECT COUNT(*) FROM customers"
+  },
+  {
+    "id": "G02",
+    "category": "simple",
+    "question": "How many orders are there in each status? Return status and count.",
+    "reference_sql": "SELECT status, COUNT(*) FROM orders GROUP BY status"
+  },
+  {
+    "id": "G03",
+    "category": "simple",
+    "question": "What is the average product price, rounded to 2 decimals?",
+    "reference_sql": "SELECT ROUND(AVG(price),2) FROM products"
+  },
+  {
+    "id": "G04",
+    "category": "simple",
+    "question": "How many customers are in each state? Return state and count.",
+    "reference_sql": "SELECT state, COUNT(*) FROM customers GROUP BY state"
+  },
+  {
+    "id": "G05",
+    "category": "simple",
+    "question": "How many reviews have a rating of 5?",
+    "reference_sql": "SELECT COUNT(*) FROM reviews WHERE rating = 5"
+  },
+  {
+    "id": "G06",
+    "category": "simple",
+    "question": "What is the total payment amount for each payment type? Return payment type and total.",
+    "reference_sql": "SELECT payment_type, ROUND(SUM(amount),2) FROM payments GROUP BY payment_type"
+  },
+  {
+    "id": "G07",
+    "category": "simple",
+    "question": "How many sellers are there in each state? Return state and count.",
+    "reference_sql": "SELECT state, COUNT(*) FROM sellers GROUP BY state"
+  },
+  {
+    "id": "G08",
+    "category": "simple",
+    "question": "What is the price of the most expensive product?",
+    "reference_sql": "SELECT MAX(price) FROM products"
+  },
+  {
+    "id": "G09",
+    "category": "joins",
+    "question": "What are the top 5 product categories by revenue? Return category name and revenue rounded to 2 decimals.",
+    "reference_sql": "SELECT c.name, ROUND(SUM(oi.quantity * oi.unit_price),2) FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN products p ON p.id=oi.product_id JOIN categories c ON c.id=p.category_id WHERE o.status <> 'canceled' GROUP BY c.name ORDER BY 2 DESC LIMIT 5"
+  },
+  {
+    "id": "G10",
+    "category": "joins",
+    "question": "What is the average review rating for customers in each state? Return state and average rating rounded to 2 decimals.",
+    "reference_sql": "SELECT cu.state, ROUND(AVG(r.rating),2) FROM reviews r JOIN orders o ON o.id=r.order_id JOIN customers cu ON cu.id=o.customer_id GROUP BY cu.state"
+  },
+  {
+    "id": "G11",
+    "category": "joins",
+    "question": "Which 5 sellers have the highest revenue? Return seller name and revenue rounded to 2 decimals.",
+    "reference_sql": "SELECT s.name, ROUND(SUM(oi.quantity * oi.unit_price),2) FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN products p ON p.id=oi.product_id JOIN sellers s ON s.id=p.seller_id WHERE o.status <> 'canceled' GROUP BY s.name ORDER BY 2 DESC LIMIT 5"
+  },
+  {
+    "id": "G12",
+    "category": "joins",
+    "question": "How many distinct customers have ordered a product in the Electronics category?",
+    "reference_sql": "SELECT COUNT(DISTINCT o.customer_id) FROM orders o JOIN order_items oi ON oi.order_id=o.id JOIN products p ON p.id=oi.product_id JOIN categories c ON c.id=p.category_id WHERE c.name='Electronics'"
+  },
+  {
+    "id": "G13",
+    "category": "joins",
+    "question": "What is the total freight value for orders from customers in each state? Return state and total freight.",
+    "reference_sql": "SELECT cu.state, ROUND(SUM(oi.freight_value),2) FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN customers cu ON cu.id=o.customer_id GROUP BY cu.state"
+  },
+  {
+    "id": "G14",
+    "category": "joins",
+    "question": "How many canceled orders are there for customers in each state? Return state and count.",
+    "reference_sql": "SELECT cu.state, COUNT(*) FROM orders o JOIN customers cu ON cu.id=o.customer_id WHERE o.status='canceled' GROUP BY cu.state"
+  },
+  {
+    "id": "G15",
+    "category": "joins",
+    "question": "How many orders contain more than one line item?",
+    "reference_sql": "SELECT COUNT(*) FROM (SELECT order_id FROM order_items GROUP BY order_id HAVING COUNT(*) > 1) t"
+  },
+  {
+    "id": "G16",
+    "category": "joins",
+    "question": "Which payment type is used most often for delivered orders? Return only the payment type.",
+    "reference_sql": "SELECT p.payment_type FROM payments p JOIN orders o ON o.id=p.order_id WHERE o.status='delivered' GROUP BY p.payment_type ORDER BY COUNT(*) DESC LIMIT 1"
+  },
+  {
+    "id": "G17",
+    "category": "temporal",
+    "question": "How many orders were placed in each month of 2018? Return month number (1-12) and order count.",
+    "reference_sql": "SELECT EXTRACT(MONTH FROM order_date)::int, COUNT(*) FROM orders WHERE order_date >= '2018-01-01' AND order_date < '2019-01-01' GROUP BY 1"
+  },
+  {
+    "id": "G18",
+    "category": "temporal",
+    "question": "What was the revenue in each year? Return year and revenue rounded to 2 decimals.",
+    "reference_sql": "SELECT EXTRACT(YEAR FROM o.order_date)::int, ROUND(SUM(oi.quantity * oi.unit_price),2) FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.status <> 'canceled' GROUP BY 1"
+  },
+  {
+    "id": "G19",
+    "category": "temporal",
+    "question": "How many customers signed up in each year? Return year and count.",
+    "reference_sql": "SELECT EXTRACT(YEAR FROM signup_date)::int, COUNT(*) FROM customers GROUP BY 1"
+  },
+  {
+    "id": "G20",
+    "category": "temporal",
+    "question": "What was the revenue in each month from July to December 2018? Return month number (7-12) and revenue rounded to 2 decimals.",
+    "reference_sql": "SELECT EXTRACT(MONTH FROM o.order_date)::int, ROUND(SUM(oi.quantity * oi.unit_price),2) FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.status <> 'canceled' AND o.order_date >= '2018-07-01' AND o.order_date < '2019-01-01' GROUP BY 1"
+  },
+  {
+    "id": "G21",
+    "category": "temporal",
+    "question": "How many orders were placed in each quarter of 2017? Return quarter number (1-4) and count.",
+    "reference_sql": "SELECT EXTRACT(QUARTER FROM order_date)::int, COUNT(*) FROM orders WHERE order_date >= '2017-01-01' AND order_date < '2018-01-01' GROUP BY 1"
+  },
+  {
+    "id": "G22",
+    "category": "temporal",
+    "question": "What is the average review rating for each calendar year of the review date? Return year and average rating rounded to 2 decimals.",
+    "reference_sql": "SELECT EXTRACT(YEAR FROM created_at)::int, ROUND(AVG(rating),2) FROM reviews GROUP BY 1"
+  },
+  {
+    "id": "G23",
+    "category": "temporal",
+    "question": "How many orders were placed in December 2018?",
+    "reference_sql": "SELECT COUNT(*) FROM orders WHERE order_date >= '2018-12-01' AND order_date < '2019-01-01'"
+  },
+  {
+    "id": "G24",
+    "category": "temporal",
+    "question": "What was the total revenue in the first quarter of 2018, rounded to 2 decimals?",
+    "reference_sql": "SELECT ROUND(SUM(oi.quantity * oi.unit_price),2) FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.status <> 'canceled' AND o.order_date >= '2018-01-01' AND o.order_date < '2018-04-01'"
+  },
+  {
+    "id": "G25",
+    "category": "window",
+    "question": "Rank all product categories by total revenue. Return category name, revenue rounded to 2 decimals, and rank (1 = highest).",
+    "reference_sql": "SELECT c.name, ROUND(SUM(oi.quantity * oi.unit_price),2) AS rev, RANK() OVER (ORDER BY SUM(oi.quantity * oi.unit_price) DESC) FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN products p ON p.id=oi.product_id JOIN categories c ON c.id=p.category_id WHERE o.status <> 'canceled' GROUP BY c.name"
+  },
+  {
+    "id": "G26",
+    "category": "window",
+    "question": "For each customer state, which product category has the highest revenue? Return state and category name.",
+    "reference_sql": "SELECT state, name FROM (SELECT cu.state, c.name, ROW_NUMBER() OVER (PARTITION BY cu.state ORDER BY SUM(oi.quantity * oi.unit_price) DESC) rn FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN customers cu ON cu.id=o.customer_id JOIN products p ON p.id=oi.product_id JOIN categories c ON c.id=p.category_id WHERE o.status <> 'canceled' GROUP BY cu.state, c.name) t WHERE rn=1"
+  },
+  {
+    "id": "G27",
+    "category": "window",
+    "question": "How many customers have placed at least 10 orders?",
+    "reference_sql": "SELECT COUNT(*) FROM (SELECT customer_id FROM orders GROUP BY customer_id HAVING COUNT(*) >= 10) t"
+  },
+  {
+    "id": "G28",
+    "category": "window",
+    "question": "What is the cumulative number of orders by month number (1-12) during 2017? Return month number and cumulative count.",
+    "reference_sql": "SELECT m, SUM(n) OVER (ORDER BY m)::bigint FROM (SELECT EXTRACT(MONTH FROM order_date)::int m, COUNT(*) n FROM orders WHERE order_date >= '2017-01-01' AND order_date < '2018-01-01' GROUP BY 1) t"
+  },
+  {
+    "id": "G29",
+    "category": "window",
+    "question": "What percentage of total revenue does each product category contribute? Return category name and percentage rounded to 1 decimal.",
+    "reference_sql": "SELECT c.name, ROUND(100.0 * SUM(oi.quantity * oi.unit_price) / SUM(SUM(oi.quantity * oi.unit_price)) OVER (), 1) FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN products p ON p.id=oi.product_id JOIN categories c ON c.id=p.category_id WHERE o.status <> 'canceled' GROUP BY c.name"
+  },
+  {
+    "id": "G30",
+    "category": "window",
+    "question": "What percentage of all orders were canceled, rounded to 2 decimals?",
+    "reference_sql": "SELECT ROUND(100.0 * COUNT(*) FILTER (WHERE status='canceled') / COUNT(*), 2) FROM orders"
+  },
+  {
+    "id": "G31",
+    "category": "window",
+    "question": "How many products are priced above the average price of their own category?",
+    "reference_sql": "SELECT COUNT(*) FROM (SELECT price, AVG(price) OVER (PARTITION BY category_id) a FROM products) t WHERE price > a"
+  },
+  {
+    "id": "G32",
+    "category": "window",
+    "question": "For each year, which month had the most orders? Return year and month number.",
+    "reference_sql": "SELECT y, m FROM (SELECT y, m, ROW_NUMBER() OVER (PARTITION BY y ORDER BY n DESC) rn FROM (SELECT EXTRACT(YEAR FROM order_date)::int y, EXTRACT(MONTH FROM order_date)::int m, COUNT(*) n FROM orders GROUP BY 1,2) a) b WHERE rn=1"
+  }
+]

@@ -1,0 +1,48 @@
+# One command: docker compose up --build
+#   web  -> http://localhost:3000      api -> http://localhost:8000/docs
+# Set ANTHROPIC_API_KEY in your shell or a .env file next to this file to enable question answering.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: askdata_admin
+      POSTGRES_PASSWORD: askdata_admin   # local demo only: change for anything shared
+      POSTGRES_DB: shop
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U askdata_admin -d shop"]
+      interval: 3s
+      retries: 20
+
+  seed:
+    build: ./backend
+    command: ["python", "data/seed.py", "--if-missing", "--admin-url", "postgresql://askdata_admin:askdata_admin@db:5432/shop"]
+    depends_on:
+      db: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    build: ./backend
+    environment:
+      ASKDATA_DATABASE_URL: postgresql+psycopg://askdata_ro:askdata_ro@db:5432/shop
+      ASKDATA_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ASKDATA_MODEL: ${ASKDATA_MODEL:-claude-sonnet-5-5}
+      ASKDATA_GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ASKDATA_GEMINI_MODEL: ${ASKDATA_GEMINI_MODEL:-gemini-flash-latest}
+      ASKDATA_CORS_ORIGINS: http://localhost:3000
+    volumes: [apidata:/data]
+    depends_on:
+      seed: { condition: service_completed_successfully }
+    ports: ["8000:8000"]
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on: [api]
+    ports: ["3000:3000"]
+
+volumes:
+  pgdata:
+  apidata:
